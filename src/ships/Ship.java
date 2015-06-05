@@ -4,7 +4,7 @@
  * You can contact him at ianwood123@yahoo.com with any questions. 
  */
 
-package javaproject;
+package ships;
 
 import java.util.ArrayList;
 import javafx.scene.image.Image;
@@ -17,10 +17,16 @@ public class Ship {
         parts = new PartsCollection();
         effects = new PartsCollection();
     }
+    
+    public static Part createNewPart(double x, double y, int lvl, boolean flip, double angl, Image img){
+        Part p = new Part(x,y,lvl,flip,angl,img);
+        return p;
+    
+    }
 }
 
 class PartsCollection{
-    private ArrayList<Part> parts;
+    private final ArrayList<Part> parts;
     int zIndex;
     
     PartsCollection(){
@@ -61,6 +67,7 @@ class PartsCollection{
     public boolean isEmpty(){
         return this.parts.isEmpty();
     }
+
 }
 
 class Part{
