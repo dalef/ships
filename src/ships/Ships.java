@@ -262,9 +262,11 @@ class MainMenu extends Menu
     public MainMenu()
     {
         VBox menu = new VBox();
+        menu.setManaged(true);
         menu.setSpacing(50);
+        menu.setMinWidth(100);
         
-        setBackground(menu, "images/full2.jpg");
+        
 
         Button playBtn = new Button("PLAY");
         Button shipBtn = new Button("CREATE A SHIP");
@@ -291,7 +293,7 @@ class MainMenu extends Menu
         exitBtn.setMaxWidth(150);
         exitBtn.setMaxHeight(50);
         
-        menu.setPadding(new Insets(100, 0, 0, 350));
+        menu.setPadding(new Insets(100, 0, 0, 0));
         menu.getChildren().add(playBtn);
         menu.getChildren().add(shipBtn);
         menu.getChildren().add(arenaBtn);
@@ -325,7 +327,17 @@ class MainMenu extends Menu
             System.exit(0);
         });
         
-        scene = new Scene(menu, SettingsStore.screenHeight, SettingsStore.screenWidth);
+        StackPane sp = new StackPane();
+        sp.getChildren().add(menu);
+        
+        sp.setPadding(new Insets(0,SettingsStore.screenWidth/2 - menu.getWidth()/2, 0, SettingsStore.screenWidth/2 - menu.getWidth()/2));
+        
+        setBackground(sp, "images/full2.jpg");
+        
+        
+        
+        scene = new Scene(sp, SettingsStore.screenHeight, SettingsStore.screenWidth);
+        
     }
 }
 

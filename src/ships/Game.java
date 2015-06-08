@@ -7,6 +7,7 @@ import javafx.scene.text.*;
 import javafx.scene.canvas.*;
 import javafx.scene.paint.*;
 import javafx.scene.shape.*;
+import ships.GameBoard.Block;
 
 class Player
 {
@@ -17,6 +18,24 @@ class Player
     public Integer x,y;
     public String name;
     
+    private GameActions[] actions;
+    
+    public void setActionOne(GameActions x){
+        actions[0] = x;
+    }
+    
+    public void setActionTwo(GameActions x){
+        actions[1] = x;
+    }
+    
+    public void setActionThree(GameActions x){
+        actions[2] = x;
+    }
+    
+    public void clearActions(){
+        actions[0] = actions[1] = actions[2] = new EmptyAction();
+    }
+    
     public Player()
     {
         id = id_counter;
@@ -26,115 +45,135 @@ class Player
         health = 100;
         ammo = 100;
         name = "";
+        actions = new GameActions[2];
     }
+    
+    abstract class GameActions{}
+    class MoveAction extends GameActions{}
+    class ShootAction extends GameActions{}
+    class EmptyAction extends GameActions{}
+    
+    
 }
 
 public class Game
 {
+    private final GameLogic gl;
     static Scene scene;
     private final Player player[];
+    GameBoard gb;
     
-    private void planningScreen(Player p)
+
+    
+    public Game()
     {
-        
-        Canvas bottomPanel = new Canvas(SettingsStore.screenWidth, 100);
-        GraphicsContext g = bottomPanel.getGraphicsContext2D();
+        player = new Player[7];
+        gl = new GameLogic(player);
+//        gl.start();
+        gb = new GameBoard(7,7);
+        planningScreen();
+    }
+    
+        private void planningScreen()
+    {
+        StackPane bottomPanel = new StackPane();
+        HBox bottomHB = new HBox();
+        Canvas bottomBackground = new Canvas(SettingsStore.screenWidth, 100);
+        GraphicsContext g = bottomBackground.getGraphicsContext2D();
         LinearGradient lg = new LinearGradient(0, 0, 0, 1, true,
                CycleMethod.REFLECT,
                new Stop(0, Color.CORNFLOWERBLUE),
                new Stop(1, Color.BLACK));
         g.setFill(lg);
-        g.fillRect(0, 0, bottomPanel.getWidth(), bottomPanel.getHeight());
-//        bottomPanel.setTranslateX(0);
-//        bottomPanel.setTranslateY(470);
+        g.fillRect(0, 0, bottomBackground.getWidth(), bottomBackground.getHeight());
         
-        Canvas rightPanel = new Canvas(100, SettingsStore.screenHeight - 100);
-        g = rightPanel.getGraphicsContext2D();
+        StackPane rightPanel = new StackPane();
+        VBox rightVB = new VBox();
+        Canvas rightBackground = new Canvas(SettingsStore.screenWidth/10, SettingsStore.screenHeight - SettingsStore.screenHeight/7);
+        g = rightBackground.getGraphicsContext2D();
         lg = new LinearGradient(0, 0, 1, 1, true,
                CycleMethod.REFLECT,
                new Stop(0, Color.CORNFLOWERBLUE),
                new Stop(1, Color.DARKSLATEBLUE));
         g.setFill(lg);
-        g.fillRect(0, 0, rightPanel.getWidth(), rightPanel.getHeight());
-//        rightPanel.setTranslateX(693);
-//        rightPanel.setTranslateY(0);
+        g.fillRect(0, 0, rightBackground.getWidth(), rightBackground.getHeight());
         
-        
-        Canvas leftPanel = new Canvas(100, SettingsStore.screenHeight - 100);
-        g = leftPanel.getGraphicsContext2D();
+        StackPane leftPanel = new StackPane();
+        VBox leftVB = new VBox();
+        Canvas leftBackground = new Canvas(SettingsStore.screenWidth/10, SettingsStore.screenHeight - SettingsStore.screenHeight/7);
+        g = leftBackground.getGraphicsContext2D();
         lg = new LinearGradient(0, 0, 1, 1, true,
                CycleMethod.REFLECT,
                new Stop(0, Color.CORNFLOWERBLUE),
                new Stop(1, Color.DARKSLATEBLUE));
         g.setFill(lg);
-        g.fillRect(0, 0, leftPanel.getWidth(), leftPanel.getHeight());
-//        leftPanel.setTranslateX(0);
-//        leftPanel.setTranslateY(0);
+        g.fillRect(0, 0, leftBackground.getWidth(), leftBackground.getHeight());
         
-        Canvas gamePanel = new Canvas(SettingsStore.screenWidth - 207, SettingsStore.screenHeight - 130);
-        g = gamePanel.getGraphicsContext2D();
-        RadialGradient rg = new RadialGradient(0, 0, gamePanel.getWidth() / 2, gamePanel.getHeight() / 2, 100, false,
+        StackPane gamePanel = new StackPane();
+        Canvas gameBackground = new Canvas(SettingsStore.screenWidth - SettingsStore.screenWidth/5, SettingsStore.screenHeight - SettingsStore.screenHeight/7);
+        g = gameBackground.getGraphicsContext2D();
+        RadialGradient rg = new RadialGradient(0, 0, gameBackground.getWidth() / 2, gameBackground.getHeight() / 2, 100, false,
                CycleMethod.REFLECT,
                new Stop(0, Color.BLACK),
                new Stop(1, Color.DARKBLUE));
         g.setFill(rg);
-        g.fillRect(0, 0, gamePanel.getWidth(), gamePanel.getHeight());
-//        gamePanel.setTranslateX(100);
-//        gamePanel.setTranslateY(0);
+        g.fillRect(0, 0, gameBackground.getWidth(), gameBackground.getHeight());
+        
+        Canvas gameForeground = new Canvas(SettingsStore.screenWidth - SettingsStore.screenWidth/5, SettingsStore.screenHeight - SettingsStore.screenHeight/7);
+        g = gameForeground.getGraphicsContext2D();
+        g.strokeRect(0, 0, gameForeground.getWidth(), gameForeground.getHeight());
+       
         
         Button clear = new Button("Clear Moves");
         clear.setPrefHeight(100);
         clear.setPrefWidth(100);
-        clear.setTranslateX(0);
-        clear.setTranslateY(470);
-        
+        clear.setOnAction((e)->{
+            gl.getCurrentPlayer().clearActions();
+        });
+        //change action buttons below
         Button move1 = new Button();
         move1.setPrefHeight(100);
         move1.setPrefWidth(100);
-        move1.setTranslateX(250);
-        move1.setTranslateY(470);
+        move1.setOnAction((e)->{
+            gl.secondCounter--;
+//            gl.getCurrentPlayer().setActionOne(null);
+        });
         
         Button move2 = new Button();
         move2.setPrefHeight(100);
         move2.setPrefWidth(100);
-        move2.setTranslateX(350);
-        move2.setTranslateY(470);
+        move2.setOnAction((e)->{
+            gl.getCurrentPlayer().setActionTwo(null);
+        });
         
         Button move3 = new Button();
         move3.setPrefHeight(100);
         move3.setPrefWidth(100);
-        move3.setTranslateX(450);
-        move3.setTranslateY(470);
+        move3.setOnAction((e)->{
+            gl.getCurrentPlayer().setActionThree(null);
+        });
         
         Button done = new Button("Done");
         done.setPrefHeight(100);
         done.setPrefWidth(100);
-        done.setTranslateX(693);
-        done.setTranslateY(470);
         
         Button back = new Button("Exit");
         back.setPrefHeight(50);
         back.setPrefWidth(80);
-        back.setTranslateX(700);
-        back.setTranslateY(20);
         
         Button help = new Button("Help");
         help.setPrefHeight(50);
         help.setPrefWidth(80);
-        help.setTranslateX(700);
-        help.setTranslateY(90);
         
         Label playerName = new Label("Player 1");
         playerName.setFont(new Font("Times New Roman", 22));
         playerName.setTextFill(Color.DARKBLUE);
-        playerName.setTranslateX(10);
-        playerName.setTranslateY(10);
+
         
         Label healthLbl = new Label("Health");
         healthLbl.setFont(new Font("Times New Roman", 22));
         healthLbl.setTextFill(Color.BLACK);
-        healthLbl.setTranslateX(10);
-        healthLbl.setTranslateY(40);
+
         
         Rectangle healthBar = new Rectangle(5, 70, 80, 10);
         Rectangle nhealthBar = new Rectangle(5, 70, 90, 10);
@@ -144,47 +183,34 @@ public class Game
         Label ammoLbl = new Label("Ammo");
         ammoLbl.setFont(new Font("Times New Roman", 22));
         ammoLbl.setTextFill(Color.BLACK);
-        ammoLbl.setTranslateX(10);
-        ammoLbl.setTranslateY(80);
-        
+
         Rectangle ammoBar = new Rectangle(5, 110, 60, 10);
         Rectangle nammoBar = new Rectangle(5, 110, 90, 10);
         ammoBar.setFill(Color.RED);
         nammoBar.setFill(Color.BLACK);
         
-        BorderPane bp = new BorderPane();
+        StackPane ammoPane = new StackPane();
+        ammoPane.getChildren().addAll(nammoBar,ammoBar);
+        
+        leftVB.getChildren().addAll(playerName, healthLbl, nhealthBar, healthBar, ammoLbl, ammoPane);
+        leftPanel.getChildren().addAll(leftBackground,leftVB);
 
+        rightVB.getChildren().addAll(back, help);
+        rightPanel.getChildren().addAll(rightBackground,rightVB);
+
+        bottomHB.getChildren().addAll(clear, move1, move2, move3, done);
+        bottomPanel.getChildren().addAll(bottomBackground,bottomHB);
+        
+        gamePanel.getChildren().addAll(gameBackground,gameForeground);
+
+        BorderPane bp = new BorderPane();
         bp.setBottom(bottomPanel);
         bp.setRight(rightPanel);
         bp.setLeft(leftPanel);
         bp.setCenter(gamePanel);
-        
-        
-        
-        bp.getChildren().add(clear);
-        bp.getChildren().add(move1);
-        bp.getChildren().add(move2);
-        bp.getChildren().add(move3);
-        bp.getChildren().add(done);
-        bp.getChildren().add(back);
-        bp.getChildren().add(help);
-        bp.getChildren().add(playerName);
-        bp.getChildren().add(healthLbl);
-        bp.getChildren().add(nhealthBar);
-        bp.getChildren().add(healthBar);
-        bp.getChildren().add(ammoLbl);
-        bp.getChildren().add(nammoBar);
-        bp.getChildren().add(ammoBar);
+        bp.setBackground(new Background(new BackgroundFill(Color.BLACK,null,null)));
         
         scene = new Scene(bp, SettingsStore.screenHeight, SettingsStore.screenWidth);
     }
     
-    public Game()
-    {
-        player = new Player[2];
-        for(Player p : player)
-        {
-            planningScreen(p);
-        }
-    }
 }
